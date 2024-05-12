@@ -12,8 +12,8 @@ const {
   paddingX,
   hollowPath,
 } = settings;
-const font = `${fontSize}px RoGSanSrfStd-Bd, GlowSansSC-Normal-Heavy_diff, apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif`;
-const subtitleFont = `${subtitleFontSize}px RoGSanSrfStd-Bd, GlowSansSC-Normal-Heavy_diff, apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif`;
+const font = `RoGSanSrfStd-Bd, GlowSansSC-Normal-Heavy_diff, apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif`;
+const subtitleFont = `RoGSanSrfStd-Bd, GlowSansSC-Normal-Heavy_diff, apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif`;
 
 export default class LogoCanvas {
   public canvas: HTMLCanvasElement;
@@ -32,13 +32,14 @@ export default class LogoCanvas {
   private graphOffset = graphOffset;
   private accentColor = '#128AFA';
   private transparentBg = false;
+  private scaleLevel = 1;
   private swapColors = false;
   private darkMode = false;
   constructor() {
     this.canvas = document.querySelector('#canvas')!;
     this.ctx = this.canvas.getContext('2d')!;
-    this.canvas.height = canvasHeight;
-    this.canvas.width = canvasWidth;
+    this.canvas.height = canvasHeight * this.scaleLevel;
+    this.canvas.width = canvasWidth * this.scaleLevel;
     this.bindEvent();
   }
   get backgroundColor() {
@@ -58,13 +59,14 @@ export default class LogoCanvas {
     loading.classList.remove('hidden');
     const c = this.ctx;
     //predict canvas width
-    await loadFont(this.textL + this.textR + this.subtitle);
+    await loadFont(this.textL + this.textR + this.subtitle, this.scaleLevel);
     loading.classList.add('hidden');
-    c.font = font;
+    c.font = `${fontSize * this.scaleLevel}px ${font}`;
     this.textMetricsL = c.measureText(this.textL);
     this.textMetricsR = c.measureText(this.textR);
     this.textMetricsST = c.measureText(this.subtitle);
     this.setWidth();
+    this.canvas.height = canvasHeight * this.scaleLevel;
     //clear canvas
     c.clearRect(0, 0, this.canvas.width, this.canvas.height);
     //Background
@@ -75,7 +77,7 @@ export default class LogoCanvas {
     //guide line
     if (import.meta.env.DEV) {
       c.strokeStyle = '#00cccc';
-      c.lineWidth = 1;
+      c.lineWidth = 1 * this.scaleLevel;
       c.beginPath();
       c.moveTo(this.canvasWidthL, 0);
       c.lineTo(this.canvasWidthL, this.canvas.height);
@@ -89,7 +91,7 @@ export default class LogoCanvas {
       c.stroke();
     }
     //blue text -> halo -> black text -> cross
-    c.font = font;
+    c.font = `${fontSize * this.scaleLevel}px ${font}`;
     c.fillStyle = this.primaryColor;
     c.textAlign = 'end';
     c.setTransform(1, 0, horizontalTilt, 1, 0, 0);
@@ -98,10 +100,10 @@ export default class LogoCanvas {
     this.drawSVG(
       c,
       window.halo,
-      this.canvasWidthL - this.canvas.height / 2 + this.graphOffset.X,
-      this.graphOffset.Y,
-      canvasHeight,
-      canvasHeight,
+      this.canvasWidthL - this.canvas.height / 2 + (this.graphOffset.X * this.scaleLevel),
+      this.graphOffset.Y * this.scaleLevel,
+      canvasHeight * this.scaleLevel,
+      canvasHeight * this.scaleLevel,
       this.textColor,
     );
     c.fillStyle = this.secondaryColor;
@@ -110,30 +112,30 @@ export default class LogoCanvas {
       c.globalCompositeOperation = 'destination-out';
     }
     c.strokeStyle = this.backgroundColor;
-    c.lineWidth = 12;
+    c.lineWidth = 12 * this.scaleLevel;
     c.setTransform(1, 0, horizontalTilt, 1, 0, 0);
     c.strokeText(this.textR, this.canvasWidthL, this.canvas.height * textBaseLine);
     c.globalCompositeOperation = 'source-over';
     c.fillText(this.textR, this.canvasWidthL, this.canvas.height * textBaseLine);
     c.resetTransform();
-    c.font = subtitleFont;
+    c.font = `${subtitleFontSize * this.scaleLevel}px ${subtitleFont}`;
     c.setTransform(1, 0, horizontalTilt * 1, 1, 0, 0);
     c.textAlign = 'end';
     c.fillText(this.subtitle, this.canvasWidthL + this.textWidthR + subtitleFontSize, this.canvas.height * textBaseLine + subtitleFontSize + 5);
     c.resetTransform();
     const graph = {
-      X: this.canvasWidthL - this.canvas.height / 2 + graphOffset.X,
-      Y: this.graphOffset.Y,
+      X: this.canvasWidthL - this.canvas.height / 2 + (graphOffset.X * this.scaleLevel),
+      Y: this.graphOffset.Y * this.scaleLevel,
     };
     c.beginPath();
     c.moveTo(
-      graph.X + (hollowPath[0][0] / 500) * canvasHeight,
-      graph.Y + (hollowPath[0][1] / 500) * canvasHeight
+      graph.X + ((hollowPath[0][0] * this.scaleLevel) / (500 * this.scaleLevel)) * (canvasHeight * this.scaleLevel),
+      graph.Y + ((hollowPath[0][1] * this.scaleLevel) / (500 * this.scaleLevel)) * (canvasHeight * this.scaleLevel)
     );
     for (let i = 1; i < 4; i++) {
       c.lineTo(
-        graph.X + (hollowPath[i][0] / 500) * canvasHeight,
-        graph.Y + (hollowPath[i][1] / 500) * canvasHeight
+        graph.X + ((hollowPath[i][0] * this.scaleLevel) / (500 * this.scaleLevel)) * (canvasHeight * this.scaleLevel),
+        graph.Y + ((hollowPath[i][1] * this.scaleLevel) / (500 * this.scaleLevel)) * (canvasHeight * this.scaleLevel)
       );
     }
     c.closePath();
@@ -146,10 +148,10 @@ export default class LogoCanvas {
     this.drawSVG(
       c,
       window.cross,
-      this.canvasWidthL - this.canvas.height / 2 + graphOffset.X,
-      this.graphOffset.Y,
-      canvasHeight,
-      canvasHeight,
+      this.canvasWidthL - this.canvas.height / 2 + (graphOffset.X * this.scaleLevel),
+      this.graphOffset.Y * this.scaleLevel,
+      canvasHeight * this.scaleLevel,
+      canvasHeight * this.scaleLevel,
       this.accentColor,
     );
   }
@@ -219,46 +221,51 @@ export default class LogoCanvas {
       this.graphOffset.Y = parseInt(gy.value);
       this.draw();
     });
+    const scaleInput = document.querySelector('#scaleLevel')! as HTMLInputElement;
+    scaleInput.addEventListener('input', () => {
+      this.scaleLevel = parseInt(scaleInput.value);
+      this.draw();
+    });
   }
   setWidth() {
     this.textWidthL =
       this.textMetricsL!.width -
-      (textBaseLine * canvasHeight + this.textMetricsL!.fontBoundingBoxDescent) * horizontalTilt;
+      (textBaseLine * (canvasHeight * this.scaleLevel) + this.textMetricsL!.fontBoundingBoxDescent) * horizontalTilt;
     this.textWidthR =
       this.textMetricsR!.width +
-      (textBaseLine * canvasHeight - this.textMetricsR!.fontBoundingBoxAscent) * horizontalTilt;
+      (textBaseLine * (canvasHeight * this.scaleLevel) - this.textMetricsR!.fontBoundingBoxAscent) * horizontalTilt;
     //extend canvas
-    if (this.textWidthL + paddingX > canvasWidth / 2) {
+    if (this.textWidthL + (paddingX * this.scaleLevel) > (canvasWidth * this.scaleLevel) / 2) {
       this.canvasWidthL = this.textWidthL + paddingX;
     } else {
-      this.canvasWidthL = canvasWidth / 2;
+      this.canvasWidthL = (canvasHeight * this.scaleLevel) / 2;
     }
-    if (this.textWidthR + paddingX > canvasWidth / 2) {
+    if (this.textWidthR + (paddingX * this.scaleLevel) > (canvasWidth * this.scaleLevel) / 2) {
       this.canvasWidthR = this.textWidthR + paddingX;
     } else {
-      this.canvasWidthR = canvasWidth / 2;
+      this.canvasWidthR = (canvasHeight * this.scaleLevel) / 2;
     }
     this.canvas.width = this.canvasWidthL + this.canvasWidthR;
   }
   generateImg() {
     let outputCanvas: HTMLCanvasElement;
     if (
-      this.textWidthL + paddingX < canvasWidth / 2 ||
-      this.textWidthR + paddingX < canvasWidth / 2
+      this.textWidthL + (paddingX * this.scaleLevel) < (canvasWidth * this.scaleLevel) / 2 ||
+      this.textWidthR + (paddingX * this.scaleLevel) < (canvasWidth * this.scaleLevel) / 2
     ) {
       outputCanvas = document.createElement('canvas');
-      outputCanvas.width = this.textWidthL + this.textWidthR + paddingX * 2;
+      outputCanvas.width = this.textWidthL + this.textWidthR + (paddingX * this.scaleLevel) * 2;
       outputCanvas.height = this.canvas.height;
       const ctx = outputCanvas.getContext('2d')!;
       ctx.drawImage(
         this.canvas,
-        canvasWidth / 2 - this.textWidthL - paddingX,
+        (canvasWidth * this.scaleLevel) / 2 - this.textWidthL - (paddingX * this.scaleLevel),
         0,
-        this.textWidthL + this.textWidthR + paddingX * 2,
+        this.textWidthL + this.textWidthR + (paddingX * this.scaleLevel) * 2,
         this.canvas.height,
         0,
         0,
-        this.textWidthL + this.textWidthR + paddingX * 2,
+        this.textWidthL + this.textWidthR + (paddingX * this.scaleLevel) * 2,
         this.canvas.height
       );
     } else {
