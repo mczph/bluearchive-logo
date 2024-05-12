@@ -95,11 +95,6 @@ export default class LogoCanvas {
     c.setTransform(1, 0, horizontalTilt, 1, 0, 0);
     c.fillText(this.textL, this.canvasWidthL, this.canvas.height * textBaseLine);
     c.resetTransform(); //restore don't work
-    c.font = subtitleFont;
-    c.setTransform(1, 0, horizontalTilt * 1, 1, 0, 0);
-    c.textAlign = 'end';
-    c.fillText(this.subtitle, this.canvasWidthL + this.textWidthR + subtitleFontSize, this.canvas.height * textBaseLine + subtitleFontSize + 5);
-    c.resetTransform();
     this.drawSVG(
       c,
       window.halo,
@@ -120,6 +115,11 @@ export default class LogoCanvas {
     c.strokeText(this.textR, this.canvasWidthL, this.canvas.height * textBaseLine);
     c.globalCompositeOperation = 'source-over';
     c.fillText(this.textR, this.canvasWidthL, this.canvas.height * textBaseLine);
+    c.resetTransform();
+    c.font = subtitleFont;
+    c.setTransform(1, 0, horizontalTilt * 1, 1, 0, 0);
+    c.textAlign = 'end';
+    c.fillText(this.subtitle, this.canvasWidthL + this.textWidthR + subtitleFontSize, this.canvas.height * textBaseLine + subtitleFontSize + 5);
     c.resetTransform();
     const graph = {
       X: this.canvasWidthL - this.canvas.height / 2 + graphOffset.X,
