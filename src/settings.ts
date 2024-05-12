@@ -1,8 +1,8 @@
 export default {
   canvasHeight: 1000,
   canvasWidth: 3600,
-  fontSize: 84,
-  subtitleFontSize: 20,
+  fontSize: 336,
+  subtitleFontSize: 80,
   textBaseLine: 0.68,
   horizontalTilt: -0.4,
   paddingX: 10,
